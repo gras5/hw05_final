@@ -1,0 +1,37 @@
+<!-- templates/about/tech.html -->
+{% extends "base.html" %}
+{% block title_text %}Технологии{% endblock %}
+{% block content %}
+<div class="row">
+  <h1>Вот что я умею</h1>
+  <aside class="col-12 col-md-3">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        Python
+      </li>
+      <li class="list-group-item">
+        Django
+      </li>
+    </ul>
+  </aside>
+  <article class="col-12 col-md-9">
+    <p>
+      Для данного сайта был использован фреймворк Django. В процессе разработки также использовались:
+      <ul>
+        <li>
+          система контроля версий Git
+        </li>
+        <li>
+          GitHub
+        </li>
+        <li>
+          огромное количество пакетов Pip
+        </li>
+        <li>
+          ну и, конечно же, Google, StackOverflow и много-много других ресурсов
+        </li>
+      </ul>
+    </p>
+  </article>
+</div>
+{% endblock %}
