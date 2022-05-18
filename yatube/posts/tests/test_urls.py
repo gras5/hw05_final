@@ -86,6 +86,10 @@ class PostsUrlTests(TestCase):
 
     def test_posts_urls_exists_at_desired_locations(self):
         """Проверка ссылок приложения Posts"""
+        follow_test_user = User.objects.create(
+            username="follow_test_user"
+        )
+
         urls_with_status_codes = [
             (reverse('posts:index'), HTTPStatus.OK, False),
 
@@ -122,12 +126,12 @@ class PostsUrlTests(TestCase):
 
             (reverse(
                 'posts:profile_follow',
-                kwargs={'username': self.user.username}
+                kwargs={'username': follow_test_user.username}
             ), HTTPStatus.OK, True),
 
             (reverse(
                 'posts:profile_unfollow',
-                kwargs={'username': self.user.username}
+                kwargs={'username': follow_test_user.username}
             ), HTTPStatus.OK, True),
         ]
 

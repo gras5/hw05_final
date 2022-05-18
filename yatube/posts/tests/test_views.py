@@ -215,7 +215,8 @@ class PostsViewTests(TestCase):
         url = reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
 
         response = self.authorized_client.get(url)
-        comments_on_page = response.context.get('comments')
+        post = response.context.get('post')
+        comments_on_page = post.all_comments
 
         self.assertIn(self.comment, comments_on_page)
 
