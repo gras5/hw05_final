@@ -11,101 +11,99 @@ class SubscriptionsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_1 = User.objects.create(username='test_user_1')
-        cls.user_2 = User.objects.create(username='test_user_2')
-        cls.user_3 = User.objects.create(username='test_user_3')
-
-        Follow.objects.create(
-            user=cls.user_1,
-            author=cls.user_3
-        )
+        cls.user = User.objects.create(username='test_user')
+        cls.author = User.objects.create(username='test_author')
 
     def setUp(self) -> None:
-        self.authorized_client_1 = Client()
-        self.authorized_client_1.force_login(self.user_1)
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
 
-        self.authorized_client_2 = Client()
-        self.authorized_client_2.force_login(self.user_2)
-
-        self.authorized_client_3 = Client()
-        self.authorized_client_3.force_login(self.user_3)
-
-    def test_user_1_subscribe_to_another_user(self):
+    def test_user_subscribe_to_author(self):
         """
         Проверка подписки пользователя на автора
         """
         url = reverse(
             'posts:profile_follow',
-            kwargs={'username': self.user_2.username}
+            kwargs={'username': self.author.username}
         )
         expected_redirect = reverse(
             'posts:profile',
-            kwargs={'username': self.user_2.username}
+            kwargs={'username': self.author.username}
         )
 
-        following_count = self.user_1.follower.count()
+        following_count = self.user.follower.count()
 
-        response = self.authorized_client_1.get(
+        response = self.authorized_client.get(
             url,
             follow=True
         )
 
         self.assertRedirects(response, expected_redirect)
-        self.assertTrue(following_count < self.user_1.follower.count())
+        self.assertTrue(following_count < self.user.follower.count())
         self.assertTrue(
             Follow.objects.filter(
-                user=self.user_1,
-                author=self.user_2,
+                user=self.user,
+                author=self.author,
             ).exists()
         )
 
-    def test_user_1_unsubscribe_from_another_user(self):
+    def test_user_unsubscribe_from_author(self):
         """
         Проверка отписки пользователя от автора
         """
+        Follow.objects.create(
+            user=self.user,
+            author=self.author,
+        )
+
         url = reverse(
             'posts:profile_unfollow',
-            kwargs={'username': self.user_3.username}
+            kwargs={'username': self.author.username}
         )
         expected_redirect = reverse(
             'posts:profile',
-            kwargs={'username': self.user_3.username}
+            kwargs={'username': self.author.username}
         )
 
-        following_count = self.user_1.follower.count()
+        following_count = self.user.follower.count()
 
-        response = self.authorized_client_1.get(
+        response = self.authorized_client.get(
             url,
             follow=True
         )
 
         self.assertRedirects(response, expected_redirect)
-        self.assertTrue(following_count > self.user_1.follower.count())
+        self.assertTrue(following_count > self.user.follower.count())
         self.assertFalse(
             Follow.objects.filter(
-                user=self.user_1,
-                author=self.user_3,
+                user=self.user,
+                author=self.author,
             ).exists()
         )
 
-    def test_user_3_post_visible_to_followers(self):
+    def test_author_post_visible_to_followers(self):
         """
         Проверка видимости постов для подписанного
          и неподписанного пользователя
         """
         post = Post.objects.create(
             text='Тестовый пост для подписчиков',
-            author=self.user_3
+            author=self.author
         )
 
-        client_url_result = (
-            (self.authorized_client_1, reverse('posts:follow_index'), True),
-            (self.authorized_client_2, reverse('posts:follow_index'), False),
+        url = reverse('posts:follow_index')
+
+        response = self.authorized_client.get(url)
+        following_posts = response.context.get('page_obj').object_list
+
+        self.assertNotIn(post, following_posts)
+
+        Follow.objects.create(
+            user=self.user,
+            author=self.author
         )
 
-        for client, url, expected_result in client_url_result:
-            with self.subTest(client=client):
-                response = client.get(url)
-                following_posts = response.context.get('page_obj').object_list
+        response = self.authorized_client.get(url)
+        following_posts = response.context.get('page_obj').object_list
 
-                self.assertEqual(post in following_posts, expected_result)
+        self.assertIn(post, following_posts)

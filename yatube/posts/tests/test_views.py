@@ -67,6 +67,8 @@ class PostsViewTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
+        cache.clear()
+
     def test_post_create_edit_page_show_correct_context(self):
         """
         Шаблон для posts:post_create post_edit сформирован
