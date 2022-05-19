@@ -216,7 +216,7 @@ class PostsViewTests(TestCase):
 
         response = self.authorized_client.get(url)
         post = response.context.get('post')
-        comments_on_page = post.all_comments
+        comments_on_page = post.comments.all()
 
         self.assertIn(self.comment, comments_on_page)
 
